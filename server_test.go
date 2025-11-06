@@ -14,9 +14,11 @@ import (
 )
 
 type StubContactStore struct {
-	contacts []models.Contact
-	addCalls []models.Contact
-	idSeq    int
+	contacts    []models.Contact
+	addCalls    []models.Contact
+	editCalls   []models.Contact
+	deleteCalls []int
+	idSeq       int
 }
 
 func (s *StubContactStore) nextId() int {
@@ -52,6 +54,16 @@ func (s *StubContactStore) FilterContacts(q string) []models.Contact {
 	return contacts
 }
 
+func (s *StubContactStore) EditContact(contact models.Contact) error {
+	s.editCalls = append(s.editCalls, contact)
+	return nil
+}
+
+func (s *StubContactStore) DeleteContact(id int) error {
+	s.deleteCalls = append(s.deleteCalls, id)
+	return nil
+}
+
 func newGetRequest(path string) *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, path, nil)
 	return req
@@ -64,12 +76,7 @@ func newGetRequestWithQuery(path string, q string) *http.Request {
 }
 
 func newContactRequest(contact models.Contact) *http.Request {
-	f := url.Values{}
-	f.Set(models.ContactFormFirstName, contact.FirstName)
-	f.Set(models.ContactFormLastName, contact.LastName)
-	f.Set(models.ContactFormPhone, contact.PhoneNumber)
-	f.Set(models.ContactFormEmail, contact.Email)
-	req, _ := http.NewRequest(http.MethodPost, "/contacts/new", strings.NewReader(f.Encode()))
+	req, _ := http.NewRequest(http.MethodPost, "/contacts/new", strings.NewReader(contactToForm(contact)))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	return req
 }
@@ -191,4 +198,69 @@ func TestServer(t *testing.T) {
 		assertCode(t, res.Code, http.StatusNotFound)
 		assertGolden(t, res.Body.Bytes())
 	})
+
+	t.Run("edit contact page", func(t *testing.T) {
+		req := newGetRequest(fmt.Sprintf("/contacts/%d/edit", 1))
+		res := httptest.NewRecorder()
+		server.ServeHTTP(res, req)
+
+		assertCode(t, res.Code, http.StatusOK)
+		assertGolden(t, res.Body.Bytes())
+
+	})
+
+	t.Run("edit contact", func(t *testing.T) {
+		contact := store.contacts[0]
+		contact.FirstName = "Charles"
+		contact.LastName = "White"
+		contact.PhoneNumber = "091020"
+		contact.Email = "Charles@white.com"
+
+		req := editContactRequest(contact)
+		res := httptest.NewRecorder()
+		server.ServeHTTP(res, req)
+
+		assertRedirect(t, res, fmt.Sprintf("/contacts/%d", contact.ID))
+
+		if len(store.editCalls) != 1 {
+			t.Fatalf("call to edit must be %d, got %d", 1, len(store.editCalls))
+		}
+
+		if store.editCalls[0] != contact {
+			t.Errorf("edit contact recived wrong argument, got %v, wanted %v", store.editCalls[0], contact)
+		}
+
+	})
+
+	t.Run("delete contact", func(t *testing.T) {
+		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/contacts/%d/delete", 1), nil)
+		res := httptest.NewRecorder()
+		server.ServeHTTP(res, req)
+
+		assertRedirect(t, res, "/contacts")
+
+		if len(store.deleteCalls) != 1 {
+			t.Fatalf("got %d call to delete, wanted %d", len(store.editCalls), 1)
+		}
+
+		if store.deleteCalls[0] != 1 {
+			t.Errorf("got %d as argument to delete, wanted %d", store.deleteCalls[0], 1)
+		}
+	})
+}
+
+func editContactRequest(contact models.Contact) *http.Request {
+	body := strings.NewReader(contactToForm(contact))
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/contacts/%d/edit", contact.ID), body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return req
+}
+
+func contactToForm(contact models.Contact) string {
+	f := url.Values{}
+	f.Set(models.ContactFormFirstName, contact.FirstName)
+	f.Set(models.ContactFormLastName, contact.LastName)
+	f.Set(models.ContactFormPhone, contact.PhoneNumber)
+	f.Set(models.ContactFormEmail, contact.Email)
+	return f.Encode()
 }

@@ -1,6 +1,8 @@
 package models
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const (
 	ContactFormFirstName = "first_name"
@@ -52,9 +54,14 @@ func (f *ContactForm) GetContact() Contact {
 	return f.Contact
 }
 
-func NewContactForm() *ContactForm {
+func NewContactForm(contact *Contact) *ContactForm {
+	var c Contact
+	if contact != nil {
+		c = *contact
+	}
 	return &ContactForm{
-		Errors: make(FormErrors),
+		Errors:  make(FormErrors),
+		Contact: c,
 	}
 }
 

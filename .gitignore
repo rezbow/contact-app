@@ -1,4 +1,4 @@
-server
 *.out
 go.sum
 views/*.go
+build/

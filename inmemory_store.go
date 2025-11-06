@@ -45,6 +45,35 @@ func (s *InMemoryStore) GetContact(id int) (models.Contact, error) {
 	return models.Contact{}, errors.New("contact not found ")
 }
 
+func (s *InMemoryStore) EditContact(c models.Contact) error {
+	for idx, contact := range s.contacts {
+		if contact.ID == c.ID {
+			s.contacts[idx] = c
+			return nil
+		}
+	}
+	return errors.New("contact not found ")
+
+}
+
+func (s *InMemoryStore) DeleteContact(id int) error {
+	var contacts []models.Contact
+	found := false
+	for _, contact := range s.contacts {
+		if contact.ID == id {
+			found = true
+			continue
+		}
+		contacts = append(contacts, contact)
+	}
+	if !found {
+		return errors.New("contact not found ")
+	}
+	s.contacts = contacts
+	return nil
+
+}
+
 func NewinMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
 		contacts: make([]models.Contact, 0),
