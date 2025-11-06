@@ -1,0 +1,17 @@
+package views
+
+templ Base(content templ.Component, title string) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<title>{ title }</title>
+			<link rel="stylesheet" href="https://unpkg.com/missing.css@1.2.0"/>
+			<link rel="stylesheet" href="/static/site.css"/>
+		</head>
+		<body>
+			<main>
+				@content
+			</main>
+		</body>
+	</html>
+}

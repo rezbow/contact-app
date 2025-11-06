@@ -1,0 +1,67 @@
+package views
+
+import "github.com/rezbow/contact-app/models"
+
+templ NewContact(form *models.ContactForm) {
+	<form action="/contacts/new" method="post">
+		<fieldset>
+			<legend>Contact Values</legend>
+			<p>
+				<label for="first_name">First Name</label>
+				<input
+					name={ models.ContactFormFirstName }
+					id="first_name"
+					type="text"
+					placeholder="First Name"
+					value={ form.FirstName }
+				/>
+				<span class="error">
+					{ form.Errors.Get(models.ContactFormFirstName) }
+				</span>
+			</p>
+			<p>
+				<label for="last_name">Last Name</label>
+				<input
+					name={ models.ContactFormLastName }
+					id="last_name"
+					type="text"
+					placeholder="Last Name"
+					value={ form.LastName }
+				/>
+				<span class="error">
+					{ form.Errors.Get(models.ContactFormLastName) }
+				</span>
+			</p>
+			<p>
+				<label for="phone">Phone</label>
+				<input
+					name={ models.ContactFormPhone }
+					id="phone"
+					type="text"
+					placeholder="Phone"
+					value={ form.PhoneNumber }
+				/>
+				<span class="error">
+					{ form.Errors.Get(models.ContactFormPhone) }
+				</span>
+			</p>
+			<p>
+				<label for="email">Email</label>
+				<input
+					name={ models.ContactFormEmail }
+					id="email"
+					type="text"
+					placeholder="Email"
+					value={ form.Email }
+				/>
+				<span class="error">
+					{ form.Errors.Get(models.ContactFormEmail) }
+				</span>
+			</p>
+			<button>Save</button>
+		</fieldset>
+	</form>
+	<p>
+		<a href="/contacts">Back</a>
+	</p>
+}

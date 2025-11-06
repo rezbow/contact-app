@@ -1,0 +1,18 @@
+package views
+
+import (
+	"fmt"
+	"github.com/rezbow/contact-app/models"
+)
+
+templ ContactDetail(c models.Contact) {
+	<h1>{ c.FirstName } { c.LastName }</h1>
+	<div>
+		<div>Phone: { c.PhoneNumber }</div>
+		<div>Email: { c.Email } </div>
+	</div>
+	<p>
+		<a href={ fmt.Sprintf("/contacts/%d/edit", c.ID) }>Edit</a>
+		<a href="/contacts">Back</a>
+	</p>
+}
