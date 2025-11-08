@@ -233,7 +233,7 @@ func TestServer(t *testing.T) {
 	})
 
 	t.Run("delete contact", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/contacts/%d/delete", 1), nil)
+		req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/contacts/%d", 1), nil)
 		res := httptest.NewRecorder()
 		server.ServeHTTP(res, req)
 
