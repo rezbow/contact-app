@@ -4,8 +4,9 @@ import "github.com/rezbow/contact-app/models"
 import "fmt"
 
 type ContactsViewModel struct {
-	Contacts []models.Contact
-	Query    string
+	Contacts   []models.Contact
+	Query      string
+	Pagination *Pagination
 }
 
 templ Contacts(model ContactsViewModel) {
@@ -36,6 +37,20 @@ templ Contacts(model ContactsViewModel) {
 					</td>
 				</tr>
 			}
+			<tr>
+				if model.Pagination.HasNext() {
+					<td colspan="5" style="text-align: center">
+						<button
+							hx-target="closest tr"
+							hx-swap="outerHTML"
+							hx-select="tbody > tr"
+							hx-get={ model.Pagination.Next() }
+						>
+							Load More
+						</button>
+					</td>
+				}
+			</tr>
 		</tbody>
 	</table>
 	<p>

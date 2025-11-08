@@ -1,61 +1,71 @@
 package views
 
-import "github.com/rezbow/contact-app/models"
+import "fmt"
 
-templ NewContact(form *models.ContactForm) {
+const (
+	ContactFormFirstName = "first_name"
+	ContactFormLastName  = "last_name"
+	ContactFormEmail     = "email"
+	ContactFormPhone     = "phone"
+)
+
+templ NewContact(form *ContactForm) {
 	<form action="/contacts/new" method="post">
 		<fieldset>
 			<legend>Contact Values</legend>
 			<p>
 				<label for="first_name">First Name</label>
 				<input
-					name={ models.ContactFormFirstName }
+					name={ ContactFormFirstName }
 					id="first_name"
 					type="text"
 					placeholder="First Name"
 					value={ form.FirstName }
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormFirstName) }
+					{ form.Errors.Get(ContactFormFirstName) }
 				</span>
 			</p>
 			<p>
 				<label for="last_name">Last Name</label>
 				<input
-					name={ models.ContactFormLastName }
+					name={ ContactFormLastName }
 					id="last_name"
 					type="text"
 					placeholder="Last Name"
 					value={ form.LastName }
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormLastName) }
+					{ form.Errors.Get(ContactFormLastName) }
 				</span>
 			</p>
 			<p>
 				<label for="phone">Phone</label>
 				<input
-					name={ models.ContactFormPhone }
+					name={ ContactFormPhone }
 					id="phone"
 					type="text"
 					placeholder="Phone"
 					value={ form.PhoneNumber }
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormPhone) }
+					{ form.Errors.Get(ContactFormPhone) }
 				</span>
 			</p>
 			<p>
 				<label for="email">Email</label>
 				<input
-					name={ models.ContactFormEmail }
+					name={ ContactFormEmail }
 					id="email"
-					type="text"
+					type="email"
 					placeholder="Email"
 					value={ form.Email }
+					hx-get={ fmt.Sprintf("/contacts/%d/email", form.ID) }
+					hx-target="next .error"
+					hx-trigger="change, keyup delay:200ms changed"
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormEmail) }
+					{ form.Errors.Get(ContactFormEmail) }
 				</span>
 			</p>
 			<button>Save</button>

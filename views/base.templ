@@ -7,8 +7,9 @@ templ Base(content templ.Component, title string) {
 			<title>{ title }</title>
 			<link rel="stylesheet" href="https://unpkg.com/missing.css@1.2.0"/>
 			<link rel="stylesheet" href="/static/site.css"/>
+			<script src="/static/htmx.js"> </script>
 		</head>
-		<body>
+		<body hx-boost="true">
 			<main>
 				@content
 			</main>

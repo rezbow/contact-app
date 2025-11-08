@@ -1,72 +1,75 @@
 package views
 
-import (
-	"fmt"
-	"github.com/rezbow/contact-app/models"
-)
+import "fmt"
 
-templ ContactEdit(form *models.ContactForm) {
-	<form action={ fmt.Sprintf("/contacts/%d/edit", form.Contact.ID) } method="post">
+templ ContactEdit(form *ContactForm) {
+	<form action={ fmt.Sprintf("/contacts/%d/edit", form.ID) } method="post">
 		<fieldset>
 			<legend>Contact Values</legend>
 			<p>
 				<label for="first_name">First Name</label>
 				<input
-					name={ models.ContactFormFirstName }
+					name={ ContactFormFirstName }
 					id="first_name"
 					type="text"
 					placeholder="First Name"
 					value={ form.FirstName }
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormFirstName) }
+					{ form.Errors.Get(ContactFormFirstName) }
 				</span>
 			</p>
 			<p>
 				<label for="last_name">Last Name</label>
 				<input
-					name={ models.ContactFormLastName }
+					name={ ContactFormLastName }
 					id="last_name"
 					type="text"
 					placeholder="Last Name"
 					value={ form.LastName }
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormLastName) }
+					{ form.Errors.Get(ContactFormLastName) }
 				</span>
 			</p>
 			<p>
 				<label for="phone">Phone</label>
 				<input
-					name={ models.ContactFormPhone }
+					name={ ContactFormPhone }
 					id="phone"
 					type="text"
 					placeholder="Phone"
 					value={ form.PhoneNumber }
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormPhone) }
+					{ form.Errors.Get(ContactFormPhone) }
 				</span>
 			</p>
 			<p>
 				<label for="email">Email</label>
 				<input
-					name={ models.ContactFormEmail }
+					name={ ContactFormEmail }
 					id="email"
-					type="text"
+					type="email"
 					placeholder="Email"
 					value={ form.Email }
+					hx-get={ fmt.Sprintf("/contacts/%d/email", form.ID) }
+					hx-target="next .error"
+					hx-trigger="change, keyup delay:200ms changed"
 				/>
 				<span class="error">
-					{ form.Errors.Get(models.ContactFormEmail) }
+					{ form.Errors.Get(ContactFormEmail) }
 				</span>
 			</p>
 			<button>Save</button>
 		</fieldset>
 	</form>
-	<form action={ fmt.Sprintf("/contacts/%d/delete", form.Contact.ID) } method="post">
-		<button>Delete Contact</button>
-	</form>
+	<button
+		hx-delete={ fmt.Sprintf("/contacts/%d", form.ID) }
+		hx-target="body"
+		hx-push-url="true"
+		hx-confirm="Are you sure you want to delete this contact?"
+	>Delete</button>
 	<p>
 		<a href="/contacts">Back</a>
 	</p>

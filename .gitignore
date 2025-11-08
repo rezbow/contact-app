@@ -1,4 +1,4 @@
 *.out
 go.sum
-views/*.go
+views/*_templ.go
 build/

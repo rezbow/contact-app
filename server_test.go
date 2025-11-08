@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/rezbow/contact-app/models"
+	"github.com/rezbow/contact-app/views"
 	"github.com/sebdah/goldie"
 )
 
@@ -26,13 +27,14 @@ func (s *StubContactStore) nextId() int {
 	return s.idSeq
 }
 
-func (s *StubContactStore) AddContact(contact models.Contact) {
+func (s *StubContactStore) AddContact(contact models.Contact) error {
 	contact.ID = s.nextId()
 	s.addCalls = append(s.addCalls, contact)
+	return nil
 }
 
-func (s *StubContactStore) GetContacts() []models.Contact {
-	return s.contacts
+func (s *StubContactStore) GetContacts(page int) ([]models.Contact, int) {
+	return s.contacts, 0
 }
 
 func (s *StubContactStore) GetContact(id int) (models.Contact, error) {
@@ -44,14 +46,12 @@ func (s *StubContactStore) GetContact(id int) (models.Contact, error) {
 	return models.Contact{}, errors.New("contact not found ")
 }
 
-func (s *StubContactStore) FilterContacts(q string) []models.Contact {
-	var contacts []models.Contact
-	for _, contact := range s.GetContacts() {
-		if strings.Contains(contact.FirstName, q) || strings.Contains(contact.LastName, q) {
-			contacts = append(contacts, contact)
-		}
-	}
-	return contacts
+func (s *StubContactStore) FilterContacts(q string, page int) ([]models.Contact, int) {
+	return s.contacts, 0
+}
+
+func (s *StubContactStore) DuplicateEmail(email string, id int) bool {
+	return true
 }
 
 func (s *StubContactStore) EditContact(contact models.Contact) error {
@@ -258,9 +258,9 @@ func editContactRequest(contact models.Contact) *http.Request {
 
 func contactToForm(contact models.Contact) string {
 	f := url.Values{}
-	f.Set(models.ContactFormFirstName, contact.FirstName)
-	f.Set(models.ContactFormLastName, contact.LastName)
-	f.Set(models.ContactFormPhone, contact.PhoneNumber)
-	f.Set(models.ContactFormEmail, contact.Email)
+	f.Set(views.ContactFormFirstName, contact.FirstName)
+	f.Set(views.ContactFormLastName, contact.LastName)
+	f.Set(views.ContactFormPhone, contact.PhoneNumber)
+	f.Set(views.ContactFormEmail, contact.Email)
 	return f.Encode()
 }
