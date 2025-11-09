@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"strings"
+	"time"
 
 	"github.com/rezbow/contact-app/models"
 )
@@ -112,27 +113,19 @@ func (s *InMemoryStore) DuplicateEmail(email string, id int) bool {
 	return false
 }
 
+// expensive call WOWO
+func (s *InMemoryStore) Count() int {
+	time.Sleep(time.Second * 5)
+	return len(s.contacts)
+}
+
 func NewinMemoryStore() *InMemoryStore {
 
 	return &InMemoryStore{
 		contacts: []models.Contact{
 			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
-			{ID: 1, FirstName: "Jack", LastName: "Jackson", Email: "jack@jaskcons.com", PhoneNumber: "213214"},
+			{ID: 2, FirstName: "John", LastName: "Doe", Email: "john@doe.com", PhoneNumber: "123142"},
+			{ID: 3, FirstName: "Arthur", LastName: "Morgan", Email: "artur@morgan.com", PhoneNumber: "213214"},
 		},
 		idSeq: 1,
 	}

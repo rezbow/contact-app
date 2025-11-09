@@ -21,7 +21,7 @@ table {
 
 tr.htmx-swapping {
   opacity: 0;
-  transition: opacity 1s ease-out;
+  transition: opacity 500ms ease-out;
 }
 
 td {

@@ -30,6 +30,7 @@ type ContactStore interface {
 	EditContact(models.Contact) error
 	DeleteContact(int) error
 	DuplicateEmail(email string, contactId int) bool
+	Count() int
 }
 
 type Server struct {
@@ -43,6 +44,7 @@ func NewContactServer(store ContactStore) *Server {
 	}
 	router := http.NewServeMux()
 	router.Handle("GET /contacts", http.HandlerFunc(server.getContacts))
+	router.Handle("DELETE /contacts", http.HandlerFunc(server.deleteBulkContact))
 	router.Handle("GET /contacts/{id}", http.HandlerFunc(server.getContactDetail))
 	router.Handle("GET /contacts/{id}/edit", http.HandlerFunc(server.editContactPage))
 	router.Handle("POST /contacts/{id}/edit", http.HandlerFunc(server.editContact))
@@ -52,6 +54,7 @@ func NewContactServer(store ContactStore) *Server {
 	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(staticFilesDir)))
 
 	router.Handle("GET /contacts/{id}/email", http.HandlerFunc(server.checkEmail))
+	router.Handle("GET /contacts/count", http.HandlerFunc(server.getCount))
 
 	server.Handler = router
 
@@ -66,6 +69,10 @@ func extractId(r *http.Request) (int, error) {
 	}
 	return id, nil
 
+}
+
+func (s *Server) getCount(w http.ResponseWriter, r *http.Request) {
+	renderString(w, fmt.Sprintf("total count is %d", s.store.Count()))
 }
 
 // checks if a given email is valid for a contact
@@ -83,6 +90,27 @@ func (s *Server) checkEmail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// /contacts
+func (s *Server) deleteBulkContact(w http.ResponseWriter, r *http.Request) {
+	idsStr := r.URL.Query()["selected_id"]
+	log.Println(idsStr)
+	for _, str := range idsStr {
+		id, err := strconv.Atoi(str)
+		if err != nil || id <= 0 {
+			continue
+		}
+		if s.store.DeleteContact(id) != nil {
+			continue
+		}
+	}
+	contacts, totalPages := s.store.GetContacts(1)
+	viewModel := views.ContactsViewModel{
+		Contacts:   contacts,
+		Pagination: views.NewPagination(1, totalPages, r.URL),
+	}
+	render(w, r.Context(), views.Contacts(viewModel))
+}
+
 func (s *Server) deleteContact(w http.ResponseWriter, r *http.Request) {
 	id, err := extractId(r)
 	if err != nil {
@@ -98,7 +126,16 @@ func (s *Server) deleteContact(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	if isInlineDelete(r) {
+		log.Println("client is using inline delete")
+		renderString(w, "")
+		return
+	}
 	redirect(w, r, "/contacts")
+}
+
+func isInlineDelete(r *http.Request) bool {
+	return r.Header.Get("HX-Trigger") == "delete-link"
 }
 
 func (s *Server) editContactPage(w http.ResponseWriter, r *http.Request) {
@@ -196,6 +233,11 @@ func (s *Server) getContacts(w http.ResponseWriter, r *http.Request) {
 		Query:      q,
 		Pagination: views.NewPagination(page, totalPage, r.URL),
 	}
+	if isActiveSearch(r) {
+		log.Println("client hit us with a active search request")
+		renderPartial(w, r.Context(), views.Rows(contacts, data.Pagination))
+		return
+	}
 	render(w, r.Context(), views.Contacts(data))
 }
 
@@ -205,6 +247,20 @@ func render(w http.ResponseWriter, ctx context.Context, content templ.Component)
 	}
 }
 
+func renderPartial(w http.ResponseWriter, ctx context.Context, content templ.Component) {
+	if err := content.Render(ctx, w); err != nil {
+		log.Println(err)
+	}
+}
+
 func redirect(w http.ResponseWriter, r *http.Request, url string) {
 	http.Redirect(w, r, url, http.StatusSeeOther)
+}
+
+func isActiveSearch(r *http.Request) bool {
+	return r.Header.Get("HX-Trigger") == "search"
+}
+
+func renderString(w http.ResponseWriter, data any) {
+	fmt.Fprintf(w, "%v", data)
 }
