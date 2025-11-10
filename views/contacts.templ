@@ -1,14 +1,17 @@
 package views
 
 import "github.com/rezbow/contact-app/models"
+import "github.com/rezbow/contact-app/archiver"
 
 type ContactsViewModel struct {
 	Contacts   []models.Contact
 	Query      string
 	Pagination *Pagination
+	ArchiveJob *archiver.ArchiveJob
 }
 
 templ Contacts(model ContactsViewModel) {
+	@Archive(model.ArchiveJob)
 	<form action="/contacts" method="get" class="tool-bar">
 		<label for="search">Search Term</label>
 		<input

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 
 	contactapp "github.com/rezbow/contact-app"
 )
@@ -10,5 +11,6 @@ import (
 func main() {
 	store := contactapp.NewinMemoryStore()
 	server := contactapp.NewContactServer(store)
-	log.Println(http.ListenAndServe(":8080", server))
+	http.DefaultServeMux.Handle("/", server)
+	log.Println(http.ListenAndServe(":8080", http.DefaultServeMux))
 }

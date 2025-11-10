@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/a-h/templ"
+	"github.com/rezbow/contact-app/archiver"
 	"github.com/rezbow/contact-app/models"
 	"github.com/rezbow/contact-app/views"
 )
@@ -55,6 +56,9 @@ func NewContactServer(store ContactStore) *Server {
 
 	router.Handle("GET /contacts/{id}/email", http.HandlerFunc(server.checkEmail))
 	router.Handle("GET /contacts/count", http.HandlerFunc(server.getCount))
+	router.Handle("POST /contacts/archive", http.HandlerFunc(server.archive))
+	router.Handle("GET /contacts/archive", http.HandlerFunc(server.archiveStatus))
+	router.Handle("GET /contacts/archive/file", http.HandlerFunc(server.archiveDownload))
 
 	server.Handler = router
 
@@ -68,7 +72,27 @@ func extractId(r *http.Request) (int, error) {
 		return 0, fmt.Errorf("couldn't extract id from path: %w", err)
 	}
 	return id, nil
+}
 
+func (s *Server) archiveDownload(w http.ResponseWriter, r *http.Request) {
+	job := archiver.GetArchiver().GetJob("user")
+	if job != nil && job.Status() == archiver.StatusComplete && job.Error() == nil {
+		w.Header().Set("Content-Disposition", `attachment; filename="contacts.json"`)
+		w.Write([]byte("contact archive"))
+	}
+}
+
+func (s *Server) archiveStatus(w http.ResponseWriter, r *http.Request) {
+	renderPartial(w, context.Background(), views.Archive(archiver.GetArchiver().GetJob("user")))
+}
+
+func (s *Server) archive(w http.ResponseWriter, r *http.Request) {
+	archiver := archiver.GetArchiver()
+	job := archiver.GetJob("user")
+	if archiver.GetJob("user") == nil {
+		job = archiver.Archive(context.Background(), "user")
+	}
+	renderPartial(w, context.Background(), views.Archive(job))
 }
 
 func (s *Server) getCount(w http.ResponseWriter, r *http.Request) {
@@ -232,6 +256,7 @@ func (s *Server) getContacts(w http.ResponseWriter, r *http.Request) {
 		Contacts:   contacts,
 		Query:      q,
 		Pagination: views.NewPagination(page, totalPage, r.URL),
+		ArchiveJob: archiver.GetArchiver().GetJob("user"),
 	}
 	if isActiveSearch(r) {
 		log.Println("client hit us with a active search request")

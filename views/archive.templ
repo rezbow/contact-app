@@ -1,0 +1,38 @@
+package views
+
+import "github.com/rezbow/contact-app/archiver"
+import "fmt"
+
+templ Archive(job *archiver.ArchiveJob) {
+	<div id="archive-ui" hx-target="this" hx-swap="outerHTML">
+		if job == nil {
+			<button hx-post="/contacts/archive">
+				Download Contact Archive
+			</button>
+		} else if job.Status() == archiver.StatusInProgess {
+			// render the progress bar
+			<div hx-get="/contacts/archive" hx-trigger="load delay:500ms">
+				Creating archive...
+				<div class="progress">
+					<div
+						class="progress-bar"
+						style={ fmt.Sprintf("width: %d%%", job.Progress()*10) }
+						role="progressbar"
+						aria-valuenow={ job.Progress() * 10 }
+					></div>
+				</div>
+			</div>
+		} else if job.Status() == archiver.StatusComplete {
+			if job.Error() != nil {
+				{ fmt.Sprintf("Failed(%s) try again", job.Error().Error()) }
+				<button hx-post="/contacts/archive">
+					Download Contact Archive
+				</button>
+			} else {
+				<a hx-boost="false" href="/contacts/archive/file">
+					Archive Ready! Click here to download. &downarrow;
+				</a>
+			}
+		}
+	</div>
+}

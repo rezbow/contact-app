@@ -26,6 +26,9 @@ func (s *StubContactStore) nextId() int {
 	s.idSeq++
 	return s.idSeq
 }
+func (s *StubContactStore) Count() int {
+	return 0
+}
 
 func (s *StubContactStore) AddContact(contact models.Contact) error {
 	contact.ID = s.nextId()
